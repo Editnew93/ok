@@ -1,0 +1,193 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+_G.StartMainMenu = false
+
+
+function loadMainMenu()
+
+    print("Main menu loaded!") -- проверка
+
+
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChild("Humanoid")
+    local root = character:WaitForChild("HumanoidRootPart")
+
+    local flying = false
+    local flySpeed = 50
+    local up = false
+    local down = false
+    local lastVelocity = Vector3.zero
+
+    -- GUI
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "FlightGUI"
+    gui.ResetOnSpawn = false
+    gui.Parent = player:WaitForChild("PlayerGui")
+
+    -- round button helper
+    local function makeRoundButton(text, pos)
+        local b = Instance.new("TextButton")
+        b.Size = UDim2.new(0.14, 0, 0.14, 0)
+        b.Position = pos
+        b.Text = text
+        b.Font = Enum.Font.SourceSansBold
+        b.TextScaled = true
+        b.TextColor3 = Color3.new(1, 1, 1)
+        b.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        b.BackgroundTransparency = 0.35
+        b.BorderSizePixel = 0
+        b.Parent = gui
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = b
+        return b
+    end
+
+    -- ↑↓ buttons
+    local upButton = makeRoundButton("↑", UDim2.new(0.84, 0, 0.40, 0))
+    local downButton = makeRoundButton("↓", UDim2.new(0.84, 0, 0.52, 0))
+
+    -- toggle fly
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(0.28, 0, 0.08, 0)
+    toggleButton.Position = UDim2.new(0.72, 0, 0.92, 0)
+    toggleButton.Text = "✈️ Toggle Fly"
+    toggleButton.Font = Enum.Font.SourceSansBold
+    toggleButton.TextScaled = true
+    toggleButton.TextColor3 = Color3.new(1, 1, 1)
+    toggleButton.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+    toggleButton.BackgroundTransparency = 0.2
+    toggleButton.BorderSizePixel = 0
+    toggleButton.Parent = gui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0.3, 0)
+    corner.Parent = toggleButton
+
+    -- Controls
+    upButton.MouseButton1Down:Connect(function() up = true end)
+    upButton.MouseButton1Up:Connect(function() up = false end)
+    downButton.MouseButton1Down:Connect(function() down = true end)
+    downButton.MouseButton1Up:Connect(function() down = false end)
+
+    toggleButton.MouseButton1Click:Connect(function()
+        flying = not flying
+        humanoid.PlatformStand = flying
+
+        if not flying then
+            -- smooth landing
+            task.spawn(function()
+                for i = 1, 40 do
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local humanoid = character:FindFirstChild("Humanoid")
+                    local root = character:WaitForChild("HumanoidRootPart")
+                    if humanoid and root then
+                        root.Velocity = Vector3.new(0, math.max(-2, lastVelocity.Y - 1), 0)
+                    end
+                    task.wait(0.02)
+                end
+            end)
+        end
+    end)
+
+    -- Movement
+    game:GetService("RunService").RenderStepped:Connect(function()
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:FindFirstChild("Humanoid")
+        local root = character:WaitForChild("HumanoidRootPart")
+        if flying and root then
+
+            local move = humanoid.MoveDirection
+            local vel = move * flySpeed
+            if up then vel += Vector3.new(0, flySpeed, 0) end
+            if down then vel += Vector3.new(0, -flySpeed, 0) end
+            root.Velocity = vel
+            lastVelocity = vel
+        end
+    end)
+end
+
+-------------------------------------------------
+-- 🔐 KEY SYSTEM
+-------------------------------------------------
+local KEY_REQUIRED = "FlyxDDfgH"
+local KEY_LINK = "https://discord.gg/MFwf9JFmb"
+
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "KeySystemUI"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 300, 0, 200)
+frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BorderSizePixel = 0
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "Enter Key"
+title.TextScaled = true
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.new(1,1,1)
+
+local keyBox = Instance.new("TextBox", frame)
+keyBox.Size = UDim2.new(1, -20, 0, 40)
+keyBox.Position = UDim2.new(0, 10, 0, 50)
+keyBox.PlaceholderText = "Enter key..."
+keyBox.Text = ""
+keyBox.TextScaled = true
+keyBox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+keyBox.TextColor3 = Color3.new(1,1,1)
+
+local checkBtn = Instance.new("TextButton", frame)
+checkBtn.Size = UDim2.new(0, 130, 0, 40)
+checkBtn.Position = UDim2.new(0, 10, 0, 110)
+checkBtn.Text = "Check Key"
+checkBtn.TextScaled = true
+checkBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+
+local getBtn = Instance.new("TextButton", frame)
+getBtn.Size = UDim2.new(0, 130, 0, 40)
+getBtn.Position = UDim2.new(0, 160, 0, 110)
+getBtn.Text = "Get Key"
+getBtn.TextScaled = true
+getBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+
+local status = Instance.new("TextLabel", frame)
+status.Size = UDim2.new(1, 0, 0, 30)
+status.Position = UDim2.new(0, 0, 1, -30)
+status.BackgroundTransparency = 1
+status.TextColor3 = Color3.new(1, 0, 0)
+status.TextScaled = true
+status.Text = ""
+
+-- Copy link
+getBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(KEY_LINK)
+        status.Text = "Copied!"
+        status.TextColor3 = Color3.new(0, 1, 0)
+    else
+        status.Text = "Clipboard unsupported"
+    end
+end)
+
+-- Key Check
+checkBtn.MouseButton1Click:Connect(function()
+    if keyBox.Text == KEY_REQUIRED then
+        status.Text = "Correct key!"
+        status.TextColor3 = Color3.new(0,1,0)
+        task.wait(0.3)
+
+        frame:Destroy()
+        _G.StartMainMenu = true
+        loadMainMenu()
+    else
+        status.Text = "Wrong key!"
+        status.TextColor3 = Color3.new(1,0,0)
+    end
+end)
